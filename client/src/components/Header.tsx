@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Phone, MessageCircle, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link, useLocation } from "wouter";
 import ThemeToggle from "./ThemeToggle";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [location] = useLocation();
 
   return (
     <header className="sticky top-0 z-50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
@@ -51,25 +53,27 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
-            <a href="#home" className="text-sm font-medium hover:text-primary transition-colors">
+            <Link href="/" className={`text-sm font-medium hover:text-primary transition-colors ${location === '/' ? 'text-primary font-semibold' : ''}`}>
               Home
-            </a>
-            <a href="#contact" className="text-sm font-medium hover:text-primary transition-colors">
+            </Link>
+            <Link href="/contact" className={`text-sm font-medium hover:text-primary transition-colors ${location === '/contact' ? 'text-primary font-semibold' : ''}`}>
               Contact
-            </a>
+            </Link>
           </nav>
 
           {/* Contact Button, Theme Toggle & Mobile Menu Toggle */}
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button 
-              variant="default" 
-              size="sm" 
-              className="hidden md:flex"
-              data-testid="button-contact"
-            >
-              Contact Us
-            </Button>
+            <Link href="/contact">
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="hidden md:flex"
+                data-testid="button-contact"
+              >
+                Contact Us
+              </Button>
+            </Link>
             
             <Button
               variant="ghost"
@@ -87,20 +91,20 @@ export default function Header() {
         {isMenuOpen && (
           <div className="md:hidden py-4 border-t">
             <nav className="flex flex-col gap-4">
-              <a 
-                href="#home" 
-                className="text-sm font-medium hover:text-primary transition-colors"
+              <Link 
+                href="/" 
+                className={`text-sm font-medium hover:text-primary transition-colors ${location === '/' ? 'text-primary font-semibold' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
-              </a>
-              <a 
-                href="#contact" 
-                className="text-sm font-medium hover:text-primary transition-colors"
+              </Link>
+              <Link 
+                href="/contact" 
+                className={`text-sm font-medium hover:text-primary transition-colors ${location === '/contact' ? 'text-primary font-semibold' : ''}`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
-              </a>
+              </Link>
               <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
                 <Phone className="w-4 h-4" />
                 <span>+91 72783 85837</span>
@@ -109,14 +113,16 @@ export default function Header() {
                 <MessageCircle className="w-4 h-4" />
                 <span>+91 72783 85837</span>
               </div>
-              <Button 
-                variant="default" 
-                size="sm" 
-                className="w-fit"
-                data-testid="button-contact-mobile"
-              >
-                Contact Us
-              </Button>
+              <Link href="/contact" onClick={() => setIsMenuOpen(false)}>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="w-fit"
+                  data-testid="button-contact-mobile"
+                >
+                  Contact Us
+                </Button>
+              </Link>
             </nav>
           </div>
         )}

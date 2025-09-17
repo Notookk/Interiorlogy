@@ -53,7 +53,7 @@ export default function Gallery({ showTitle = true }: GalleryProps) {
   };
 
   return (
-    <section className="py-16 bg-card/30">
+    <section className="py-16 bg-card/30" id="gallery">
       <div className="container mx-auto px-4">
         {showTitle && (
           <div className="text-center mb-12">

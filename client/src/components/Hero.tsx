@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function Hero() {
   return (
@@ -23,17 +24,23 @@ export default function Hero() {
               size="lg" 
               className="text-base px-8"
               data-testid="button-explore-work"
+              onClick={() => {
+                console.log('Explore work clicked - scrolling to gallery');
+                document.querySelector('#gallery')?.scrollIntoView({ behavior: 'smooth' });
+              }}
             >
               Explore Our Work
             </Button>
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="text-base px-8"
-              data-testid="button-consultation"
-            >
-              Free Consultation
-            </Button>
+            <Link href="/contact">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="text-base px-8"
+                data-testid="button-consultation"
+              >
+                Free Consultation
+              </Button>
+            </Link>
           </div>
         </div>
       </div>
