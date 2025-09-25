@@ -1,5 +1,6 @@
 import { Shield, PenTool, Layout, Clock, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import ParallaxSection from "./ParallaxSection";
 
 const features = [
   {
@@ -31,8 +32,7 @@ const features = [
 
 export default function WhyChooseUs() {
   return (
-    <section className="py-16 bg-background">
-      <div className="container mx-auto px-4">
+    <ParallaxSection as="section" className="py-16 bg-background" innerClassName="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-6">
             Why Choose Interiorlogy For Interior Decoration
@@ -62,7 +62,6 @@ export default function WhyChooseUs() {
             </Card>
           ))}
         </div>
-      </div>
-    </section>
+    </ParallaxSection>
   );
 }

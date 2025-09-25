@@ -1,6 +1,5 @@
-import { useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useReducedMotion, motion, useScroll, useTransform } from "framer-motion";
+import { useMemo, useRef, useState } from "react";
 
 // Import generated images
 import livingRoomImg from "@assets/generated_images/Modern_luxury_living_room_4d7bc6f4.png";
@@ -10,13 +9,20 @@ import kitchenImg from "@assets/generated_images/Modern_kitchen_design_35e3e730.
 import officeImg from "@assets/generated_images/Elegant_home_office_design_97146369.png";
 import bathroomImg from "@assets/generated_images/Luxury_bathroom_interior_design_1cf1da93.png";
 
-const galleryImages = [
-  { src: livingRoomImg, alt: "Modern luxury living room with elegant furniture" },
-  { src: diningRoomImg, alt: "Contemporary dining room design" },
-  { src: bedroomImg, alt: "Luxury master bedroom interior" },
-  { src: kitchenImg, alt: "Modern kitchen with marble countertops" },
-  { src: officeImg, alt: "Elegant home office design" },
-  { src: bathroomImg, alt: "Luxury bathroom with marble finishes" },
+type GalleryItem = {
+  src: string;
+  alt: string;
+  title: string;
+  category: "Living" | "Dining" | "Bedroom" | "Kitchen" | "Office" | "Bathroom";
+};
+
+const galleryImages: GalleryItem[] = [
+  { src: livingRoomImg, alt: "Modern luxury living room with elegant furniture", title: "Luxe Living Room", category: "Living" },
+  { src: diningRoomImg, alt: "Contemporary dining room design", title: "Contemporary Dining", category: "Dining" },
+  { src: bedroomImg, alt: "Luxury master bedroom interior", title: "Master Bedroom", category: "Bedroom" },
+  { src: kitchenImg, alt: "Modern kitchen with marble countertops", title: "Modern Kitchen", category: "Kitchen" },
+  { src: officeImg, alt: "Elegant home office design", title: "Home Office", category: "Office" },
+  { src: bathroomImg, alt: "Luxury bathroom with marble finishes", title: "Luxury Bathroom", category: "Bathroom" },
 ];
 
 interface GalleryProps {
@@ -24,129 +30,199 @@ interface GalleryProps {
 }
 
 export default function Gallery({ showTitle = true }: GalleryProps) {
-  const [selectedImage, setSelectedImage] = useState<number | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+  const sectionRef = useRef<HTMLElement | null>(null);
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start end", "end start"] });
 
-  const openLightbox = (index: number) => {
-    setSelectedImage(index);
-    console.log(`Opened lightbox for image ${index + 1}`);
+  // Depth scroll transforms
+  const yBg = useTransform(scrollYProgress, [0, 1], [-60, 60]);
+  const yWrap = useTransform(scrollYProgress, [0, 1], [30, -30]);
+  const rotateWrap = useTransform(scrollYProgress, [0, 1], [-1.5, 1.5]);
+  const scaleWrap = useTransform(scrollYProgress, [0, 1], [0.98, 1.02]);
+
+  // Card image animation
+  const imageVariants = prefersReducedMotion
+    ? undefined
+    : {
+        rest: { scale: 1, rotateX: 0, rotateY: 0 },
+        hover: {
+          scale: 1.08,
+          rotateX: -3,
+          rotateY: 3,
+          boxShadow: "0 20px 60px -10px rgba(0,0,0,0.5)",
+          transition: { type: "spring", stiffness: 200, damping: 18 },
+        },
+      } as const;
+
+  const gridVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.14, delayChildren: 0.1 } },
   };
 
-  const closeLightbox = () => {
-    setSelectedImage(null);
-    console.log('Closed lightbox');
+  const tileVariants = {
+    hidden: { opacity: 0, y: 50, scale: 0.95, filter: "blur(8px)" },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      filter: "blur(0px)",
+      transition: { duration: 0.9, ease: [0.22, 1, 0.36, 1] },
+    },
   };
 
-  const goToPrevious = () => {
-    if (selectedImage !== null) {
-      const newIndex = selectedImage > 0 ? selectedImage - 1 : galleryImages.length - 1;
-      setSelectedImage(newIndex);
-      console.log(`Navigated to image ${newIndex + 1}`);
-    }
-  };
+  // Category filtering
+  const [activeCategory, setActiveCategory] = useState<"All" | GalleryItem["category"]>("All");
+  const categories = useMemo(() => ["All", ...Array.from(new Set(galleryImages.map(g => g.category)))] as const, []);
+  const filtered = useMemo(() => activeCategory === "All" ? galleryImages : galleryImages.filter(g => g.category === activeCategory), [activeCategory]);
 
-  const goToNext = () => {
-    if (selectedImage !== null) {
-      const newIndex = selectedImage < galleryImages.length - 1 ? selectedImage + 1 : 0;
-      setSelectedImage(newIndex);
-      console.log(`Navigated to image ${newIndex + 1}`);
-    }
-  };
+  // Visual rhythm: vary aspect ratios in a repeating pattern
+  const aspectClasses = ["aspect-[4/3]", "aspect-[3/4]", "aspect-[16/10]", "aspect-[1/1]"];
 
   return (
-    <section className="py-16 bg-card/30" id="gallery">
-      <div className="container mx-auto px-4">
-        {showTitle && (
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground mb-4">
-              Our Portfolio
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Discover our latest interior design projects showcasing innovative spaces that blend functionality with aesthetic excellence.
-            </p>
-          </div>
-        )}
+    <motion.section
+      className="relative py-24 bg-gradient-to-br from-background via-background/95 to-background/90 overflow-hidden"
+      id="gallery"
+      ref={sectionRef}
+      initial={{ opacity: 0, y: 60 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+    >
+      {/* Aurora Background Glow */}
+      {!prefersReducedMotion && (
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(255,200,255,0.12),transparent_60%)] blur-3xl"
+          style={{ y: yBg }}
+        />
+      )}
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {galleryImages.map((image, index) => (
-            <div
-              key={index}
-              className="group relative bg-card rounded-lg overflow-hidden shadow-md hover-elevate cursor-pointer"
-              onClick={() => openLightbox(index)}
-              data-testid={`gallery-item-${index}`}
-            >
-              <div className="aspect-[4/3] overflow-hidden">
-                <img
-                  src={image.src}
-                  alt={image.alt}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <div className="bg-white/90 backdrop-blur-sm rounded-full p-3">
-                    <svg className="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Floating Sparkles */}
+      {!prefersReducedMotion && (
+        <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1.5 h-1.5 rounded-full bg-white/40 blur-sm"
+              initial={{ x: Math.random() * 1000, y: Math.random() * 700, opacity: 0 }}
+              animate={{ y: "-=250", opacity: [0, 1, 0] }}
+              transition={{ duration: 7 + i, repeat: Infinity, delay: i * 0.7 }}
+            />
           ))}
         </div>
+      )}
 
-        {/* Lightbox */}
-        {selectedImage !== null && (
-          <div className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4">
-            <div className="relative max-w-6xl max-h-full">
-              {/* Close Button */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute -top-12 right-0 text-white hover:bg-white/20"
-                onClick={closeLightbox}
-                data-testid="button-close-lightbox"
-              >
-                <X className="w-6 h-6" />
-              </Button>
+      <motion.div
+        className="container mx-auto px-4 relative will-change-transform"
+        style={prefersReducedMotion ? undefined : { y: yWrap, rotate: rotateWrap, scale: scaleWrap }}
+      >
+        {showTitle && (
+          <motion.div
+            className="text-center mb-20"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ duration: 0.7 }}
+          >
+            <h2 className="text-[2.5rem] font-serif font-bold text-foreground mb-6 tracking-tight drop-shadow-lg">
+              Our Premium Portfolio
+            </h2>
+            <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+              Experience interiors brought to life with depth, elegance, and timeless craft.
+            </p>
 
-              {/* Navigation Buttons */}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
-                onClick={goToPrevious}
-                data-testid="button-previous-image"
-              >
-                <ChevronLeft className="w-8 h-8" />
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-white hover:bg-white/20"
-                onClick={goToNext}
-                data-testid="button-next-image"
-              >
-                <ChevronRight className="w-8 h-8" />
-              </Button>
-
-              {/* Image */}
-              <img
-                src={galleryImages[selectedImage].src}
-                alt={galleryImages[selectedImage].alt}
-                className="max-w-full max-h-full object-contain"
-                data-testid="lightbox-image"
-              />
-
-              {/* Image Counter */}
-              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-4 py-2 rounded-full text-sm">
-                {selectedImage + 1} / {galleryImages.length}
-              </div>
+            {/* Category Filters */}
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+              {categories.map((cat) => (
+                <motion.button
+                  key={cat as string}
+                  onClick={() => setActiveCategory(cat as any)}
+                  className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
+                    activeCategory === cat
+                      ? "bg-primary/10 border-primary/40 text-foreground"
+                      : "bg-muted/40 border-border text-muted-foreground hover:bg-muted"
+                  }`}
+                  whileTap={{ scale: 0.96 }}
+                >
+                  {cat}
+                </motion.button>
+              ))}
             </div>
-          </div>
+          </motion.div>
         )}
-      </div>
-    </section>
+
+        {/* Gallery Masonry */}
+        <motion.div
+          className="columns-1 md:columns-2 lg:columns-3 gap-x-6"
+          variants={gridVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.25 }}
+        >
+          {filtered.map((image, index) => (
+            <motion.div
+              key={index}
+              className="break-inside-avoid mb-6 group relative cursor-default focus-within:ring-2 focus-within:ring-primary/40 focus-within:ring-offset-2 focus-within:ring-offset-background rounded-2xl"
+              variants={tileVariants}
+              whileHover="hover"
+              layout
+            >
+              {/* Premium Glow Frame */}
+              <div className="relative rounded-2xl p-[2px] bg-gradient-to-tr from-primary/50 via-secondary/40 to-accent/30 shadow-[0_12px_36px_-8px_rgba(0,0,0,0.45)]">
+                <div className="relative rounded-2xl overflow-hidden bg-card/70 backdrop-blur-xl supports-[backdrop-filter]:backdrop-blur-xl transition-all duration-700 group-hover:shadow-2xl group-hover:-translate-y-[4px]">
+                  
+                  {/* Prism Light Sweep */}
+                  <motion.div
+                    className="absolute -inset-y-16 -left-1/3 w-1/2 rotate-12 bg-gradient-to-r from-transparent via-white/25 to-transparent opacity-0 group-hover:opacity-30"
+                    initial={{ x: "-50%" }}
+                    animate={{ x: "150%" }}
+                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
+
+                  {/* Image with cinematic motion */}
+                  <div className={`${aspectClasses[index % aspectClasses.length]} overflow-hidden`}>
+                    <motion.img
+                      src={image.src}
+                      alt={image.alt}
+                      className="w-full h-full object-cover will-change-transform"
+                      variants={imageVariants}
+                      initial="rest"
+                      animate={{ scale: [1, 1.05, 1], y: [0, -8, 0], rotate: [0, 0.3, -0.3, 0] }}
+                      transition={{ duration: 22, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+
+                  {/* Caption Overlay with title and category */}
+                  <motion.div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent flex items-end justify-between p-4 md:p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                    <div>
+                      <p className="text-white text-base md:text-lg font-semibold drop-shadow-xl">{image.title}</p>
+                      <span className="mt-1 inline-block text-xs px-2 py-0.5 rounded-full bg-white/15 text-white/90 backdrop-blur-sm">
+                        {image.category}
+                      </span>
+                    </div>
+                    <span className="hidden md:inline-block text-white/90 text-sm">View</span>
+                  </motion.div>
+
+                  {/* Subtle Noise Overlay for richness */}
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/asfalt-dark.png')]"
+                  />
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* CTA */}
+        <div className="mt-14 text-center">
+          <a href="/contact" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-border bg-muted/40 hover:bg-muted transition-colors">
+            <span className="text-sm font-medium">View More Projects</span>
+          </a>
+        </div>
+      </motion.div>
+    </motion.section>
   );
 }

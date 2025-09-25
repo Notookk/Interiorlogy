@@ -3,6 +3,8 @@ import Hero from "@/components/Hero";
 import Gallery from "@/components/Gallery";
 import WhyChooseUs from "@/components/WhyChooseUs";
 import CompanyStory from "@/components/CompanyStory";
+import InspireSection from "@/components/InspireSection";
+import HappyClients from "@/components/HappyClients";
 import Footer from "@/components/Footer";
 
 export default function Home() {
@@ -14,6 +16,8 @@ export default function Home() {
         <Gallery />
         <WhyChooseUs />
         <CompanyStory />
+        <InspireSection />
+        <HappyClients />
       </main>
       <Footer />
     </div>

@@ -1,4 +1,5 @@
 import { Instagram, Facebook, Twitter, Phone, Mail } from "lucide-react";
+import ParallaxSection from "./ParallaxSection";
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -9,13 +10,12 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-card border-t">
-      <div className="container mx-auto px-4 py-12">
+    <ParallaxSection as="footer" className="bg-card border-t" innerClassName="container mx-auto px-4 py-12">
         <div className="grid md:grid-cols-3 gap-8">
           {/* Company Info */}
           <div>
             <h3 className="text-2xl font-serif font-bold text-foreground mb-4">
-              interiology
+              Interiorlogy
             </h3>
             <p className="text-muted-foreground mb-6 leading-relaxed">
               Creating beautiful, functional spaces that reflect your personality and enhance your lifestyle. 
@@ -29,13 +29,13 @@ export default function Footer() {
               >
                 <Instagram className="w-5 h-5 text-muted-foreground" />
               </button>
-              <button
+              <a href="https://www.facebook.com/people/Interiorlogy/61568255202846" target="_blank"> <button
                 onClick={() => handleSocialClick('Facebook')}
                 className="bg-muted hover-elevate p-2 rounded-full transition-colors"
                 data-testid="social-facebook"
               >
                 <Facebook className="w-5 h-5 text-muted-foreground" />
-              </button>
+              </button></a>
               <button
                 onClick={() => handleSocialClick('Twitter')}
                 className="bg-muted hover-elevate p-2 rounded-full transition-colors"
@@ -69,11 +69,11 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3 text-muted-foreground">
                 <Mail className="w-4 h-4" />
-                <span>info@interiology.com</span>
+                <span>interiorlogyofficial@gmail.com</span>
               </div>
               <div className="pt-2">
                 <p className="text-sm text-muted-foreground">
-                  Mumbai, India
+                  Muragacha Hospital Road, P.S: Ghola, P.O: Jugberia, Kolkata 700110
                 </p>
               </div>
             </div>
@@ -82,10 +82,9 @@ export default function Footer() {
 
         <div className="border-t mt-8 pt-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © {currentYear} Interiology. All rights reserved. | Professional Interior Design Services
+            © {currentYear} Interiorlogy. All rights reserved. | Professional Interior Design Services
           </p>
         </div>
-      </div>
-    </footer>
+    </ParallaxSection>
   );
 }
