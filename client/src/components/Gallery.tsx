@@ -114,7 +114,16 @@ export default function Gallery({ showTitle = true }: GalleryProps) {
 
       <motion.div
         className="container mx-auto px-4 relative will-change-transform"
-        style={prefersReducedMotion ? undefined : { y: yWrap, rotate: rotateWrap, scale: scaleWrap }}
+        /* On mobile we remove rotate/scale to avoid off-center angled feel */
+        style={
+          prefersReducedMotion
+            ? undefined
+            : {
+                y: yWrap,
+                rotate: typeof window !== 'undefined' && window.innerWidth < 640 ? 0 : rotateWrap,
+                scale: typeof window !== 'undefined' && window.innerWidth < 640 ? 1 : scaleWrap,
+              }
+        }
       >
         {showTitle && (
           <motion.div
@@ -153,7 +162,7 @@ export default function Gallery({ showTitle = true }: GalleryProps) {
 
         {/* Gallery Masonry */}
         <motion.div
-          className="columns-1 md:columns-2 lg:columns-3 gap-x-6"
+          className="columns-1 md:columns-2 lg:columns-3 gap-x-6 mx-auto max-w-4xl sm:max-w-none"
           variants={gridVariants}
           initial="hidden"
           whileInView="visible"
